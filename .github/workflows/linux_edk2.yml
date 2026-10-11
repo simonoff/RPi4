@@ -57,6 +57,16 @@ jobs:
         curl -L https://go.microsoft.com/fwlink/?linkid=2284009 -o keys/db_2023_opt_ms.cer
         curl -L https://github.com/microsoft/secureboot_objects/raw/main/PostSignedObjects/SignedByKEK2023/dbx_aarch64.efiauth2 -o keys/dbx_arm64.bin
 
+    - name: CM4 defaults (no 3GB limit, devicetree)
+      run: |
+        sed -i \
+          -e '/PcdRamMoreThan3GB|/s/\(|0x0|\)0\(\r\?\)$/\11\2/' \
+          -e '/PcdRamLimitTo3GB|/s/\(|0x0|\)1\(\r\?\)$/\10\2/' \
+          -e '/PcdSystemTableMode|/s/\(|0x0|\)0\(\r\?\)$/\12\2/' \
+          edk2-platforms/Platform/RaspberryPi/RPi4/RPi4.dsc
+        grep -E 'PcdRamMoreThan3GB\||PcdRamLimitTo3GB\||PcdSystemTableMode\|' \
+          edk2-platforms/Platform/RaspberryPi/RPi4/RPi4.dsc
+
     - name: Build UEFI firmware
       run: |
         export WORKSPACE=$PWD
